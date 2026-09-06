@@ -1,11 +1,31 @@
-<div align="center">
+# Диспетчер задач (Task Manager) для Android
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+Диспетчер задач в стиле Windows Task Manager для мониторинга нагрузки на процессор (ЦП), оперативную память и контроля активных процессов.
 
-  <h1>Built with AI Studio</h2>
+## 🚀 Как скачать APK из GitHub
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+В репозитории настроен автоматический CI/CD (**GitHub Actions**):
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+1. Перейдите во вкладку **Actions** в верхней панели вашего GitHub-репозитория.
+2. Выберите последний успешный запуск workflow **Build Android APK** (отмечен зеленой галочкой ✅).
+3. Внизу страницы в разделе **Artifacts** нажмите на **task-manager-debug-apk** — начнется скачивание архива с готовым установочным файлом `app-debug.apk`.
+4. Распакуйте архив и установите `.apk` на ваш Android-смартфон.
 
-</div>
+### Ручной запуск сборки APK в GitHub Actions
+1. Откройте вкладку **Actions** -> **Build Android APK**.
+2. Нажмите справа кнопку **Run workflow** -> **Run workflow**.
+3. Через 1-2 минуты в завершённом запуске появится ссылка на скачивание APK в разделе **Artifacts**.
+
+## 🛠️ Локальная сборка на компьютере
+
+```bash
+# Клонировать репозиторий
+git clone <url_вашего_репозитория>
+cd <папка_проекта>
+
+# Собрать APK через Gradle
+./gradlew assembleDebug
+
+# Готовый файл появится по пути:
+# app/build/outputs/apk/debug/app-debug.apk
+```

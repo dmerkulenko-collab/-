@@ -1,0 +1,38 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- CPU Chip Body -->
+    <path
+        android:fillColor="#1E293B"
+        android:strokeColor="#38BDF8"
+        android:strokeWidth="2.5"
+        android:pathData="M35,32 h38 a4,4 0 0 1 4,4 v36 a4,4 0 0 1 -4,4 h-38 a4,4 0 0 1 -4,-4 v-36 a4,4 0 0 1 4,-4 z" />
+    <!-- Top and Bottom Pins -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#0EA5E9"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M42,26 v6 M50,26 v6 M58,26 v6 M66,26 v6 M42,76 v6 M50,76 v6 M58,76 v6 M66,76 v6" />
+    <!-- Left and Right Pins -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#0EA5E9"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M25,42 h6 M25,50 h6 M25,58 h6 M25,66 h6 M77,42 h6 M77,50 h6 M77,58 h6 M77,66 h6" />
+    <!-- Inner Core Background -->
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M38,39 h32 a2,2 0 0 1 2,2 v26 a2,2 0 0 1 -2,2 h-32 a2,2 0 0 1 -2,-2 v-26 a2,2 0 0 1 2,-2 z" />
+    <!-- Dynamic CPU Activity Pulse Wave -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#10B981"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M38,53 L45,53 L49,43 L54,63 L58,47 L62,56 L70,56" />
+</vector>

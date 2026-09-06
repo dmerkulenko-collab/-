@@ -1,0 +1,6 @@
+{
+  "name": "Диспетчер задач",
+  "description": "Диспетчер задач в стиле Windows для Android с мониторингом нагрузки на процессор (CPU), оперативной памяти и запущенных процессов.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
