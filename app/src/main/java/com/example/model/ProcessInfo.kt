@@ -29,7 +29,14 @@ data class ProcessInfo(
     val memoryPercentage: Float,
     val importanceCategory: ProcessImportanceCategory,
     val isSystemApp: Boolean,
+    val isGame: Boolean = false,
     val threadCount: Int,
     val appVersion: String,
-    val icon: Drawable? = null
+    val icon: Drawable? = null,
+    val isMeasurementReal: Boolean = true,
+    val realCpuTicks: Long = 0L,
+    val foregroundTimeTodayMinutes: Long = 0L,
+    val lastUsedTimestamp: Long = 0L,
+    val powerUsageLevel: String = "Низкое",
+    val thermalImpactScore: Int = 0
 )

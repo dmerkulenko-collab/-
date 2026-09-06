@@ -15,7 +15,19 @@ data class SystemPerformanceState(
     val cpuCores: Int = 1,
     val deviceModel: String = "",
     val androidVersion: String = "",
-    val topCpuProcess: ProcessInfo? = null
+    val topCpuProcess: ProcessInfo? = null,
+    val dataSourceDescription: String = "",
+    val isRootOrAdbActive: Boolean = false,
+    val cpuFrequencyGhz: Float = 0f,
+    val batteryTemperatureCelsius: Float = 0f,
+    val batteryLevelPercent: Int = 0,
+    val isCharging: Boolean = false,
+    val batteryVoltageMv: Int = 0,
+    val thermalStatus: String = "Норма",
+    val isOverheating: Boolean = false,
+    val thermalCulpritProcess: ProcessInfo? = null,
+    val batteryHistory: List<Float> = emptyList(),
+    val temperatureHistory: List<Float> = emptyList()
 ) {
     val memoryUsagePercentage: Float
         get() = if (memoryTotalBytes > 0) {

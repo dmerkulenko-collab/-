@@ -121,6 +121,11 @@ fun TaskManagerApp(
                             ProcessesView(
                                 processes = allProcesses,
                                 performance = performance,
+                                isUsageStatsGranted = isUsageStatsGranted,
+                                onRequestPermissionClick = {
+                                    val intent = viewModel.getUsageAccessSettingsIntent()
+                                    context.startActivity(intent)
+                                },
                                 searchQuery = searchQuery,
                                 onSearchQueryChange = { viewModel.setSearchQuery(it) },
                                 filter = filter,

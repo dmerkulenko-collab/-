@@ -138,6 +138,22 @@ fun ProcessItemCard(
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f, fill = false)
                         )
+                        if (process.isGame) {
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = Color(0xFFFF5722).copy(alpha = 0.18f)
+                            ) {
+                                Text(
+                                    text = "🎮 Игра",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = Color(0xFFFF5722),
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                )
+                            }
+                        }
                         if (process.isSystemApp) {
                             Text(
                                 text = " [Сис]",
@@ -181,6 +197,45 @@ fun ProcessItemCard(
                                 color = statusColor,
                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                             )
+                        }
+
+                        if (process.powerUsageLevel != "Низкое") {
+                            val powerColor = when (process.powerUsageLevel) {
+                                "Очень высокое" -> HeatmapExtreme
+                                "Высокое" -> HeatmapHigh
+                                else -> HeatmapMed
+                            }
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = powerColor.copy(alpha = 0.15f)
+                            ) {
+                                Text(
+                                    text = "⚡ ${process.powerUsageLevel}",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = powerColor,
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                )
+                            }
+                        }
+
+                        if (!process.isMeasurementReal) {
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f)
+                            ) {
+                                Text(
+                                    text = "SELinux",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Medium
+                                    ),
+                                    color = MaterialTheme.colorScheme.outline,
+                                    modifier = Modifier.padding(horizontal = 3.dp, vertical = 1.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -266,7 +321,7 @@ fun ProcessItemCard(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Пакет: ${process.packageName} | Потоков: ${process.threadCount}",
+                        text = "Пакет: ${process.packageName} | Потоков: ${process.threadCount} | Энергия: ${process.powerUsageLevel} (Индекс: ${process.thermalImpactScore}/100)",
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontSize = 11.sp,
                             fontFamily = FontFamily.Monospace

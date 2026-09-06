@@ -99,7 +99,17 @@ fun ProcessDetailsDialog(
                 DetailItem("Использование ОЗУ", "${String.format("%.1f", process.memoryMb)} МБ (${process.memoryBytes} байт)")
                 DetailItem("Состояние", process.importanceCategory.getDisplayNameRussian())
                 DetailItem("Потоков выполнения", "${process.threadCount}")
-                DetailItem("Тип приложения", if (process.isSystemApp) "Системное" else "Пользовательское")
+                DetailItem("Тип приложения", when {
+                    process.isGame -> "🎮 Игра"
+                    process.isSystemApp -> "Системное"
+                    else -> "Пользовательское"
+                })
+                DetailItem("Энергопотребление", process.powerUsageLevel)
+                DetailItem("Вклад в нагрев устройства", "${process.thermalImpactScore} / 100")
+                if (process.foregroundTimeTodayMinutes > 0) {
+                    DetailItem("Активно на экране сегодня", "${process.foregroundTimeTodayMinutes} мин")
+                }
+                DetailItem("Источник метрик", if (process.isMeasurementReal) "Ядро Linux (Прямой съем)" else "Анализатор активности (SELinux изоляция)")
                 DetailItem("Имя пакета", process.packageName)
                 DetailItem("Версия", process.appVersion)
 

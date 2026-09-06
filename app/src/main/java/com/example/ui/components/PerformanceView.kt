@@ -23,6 +23,9 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.WatchLater
+import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material.icons.filled.BatteryChargingFull
+import androidx.compose.material.icons.filled.BatteryStd
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -45,6 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.SystemPerformanceState
 import com.example.ui.theme.CpuGreen
+import com.example.ui.theme.HeatmapExtreme
+import com.example.ui.theme.HeatmapMed
 import com.example.ui.theme.MemoryPurple
 import com.example.ui.theme.Slate900
 import com.example.ui.theme.WinBlue
@@ -64,20 +69,29 @@ fun PerformanceView(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         // 1. CPU PERFORMANCE CARD (Classic Windows Task Manager Green Graph)
+        val freqSubtitle = if (performance.cpuFrequencyGhz > 0f) {
+            "${performance.cpuCores} ядер • ${String.format("%.2f", performance.cpuFrequencyGhz)} ГГц"
+        } else {
+            "${performance.cpuCores} ядер"
+        }
+
         PerformanceChartCard(
             title = "ЦП (Процессор)",
-            subtitle = "${performance.cpuCores} ядер • Использование: ${String.format("%.1f", performance.totalCpuUsage)}%",
+            subtitle = "$freqSubtitle • Использование: ${String.format("%.1f", performance.totalCpuUsage)}%",
             currentValue = "${String.format("%.1f", performance.totalCpuUsage)}%",
             history = performance.cpuHistory,
             lineColor = CpuGreen,
             badgeIcon = Icons.Default.Speed,
-            stats = listOf(
-                Pair("Использование", "${String.format("%.1f", performance.totalCpuUsage)}%"),
-                Pair("Ядер ЦП", "${performance.cpuCores}"),
-                Pair("Процессов", "${performance.activeProcessesCount}"),
-                Pair("Потоков", "${performance.totalThreadsCount}"),
-                Pair("Время работы", performance.uptimeFormatted)
-            )
+            stats = buildList {
+                add(Pair("Использование", "${String.format("%.1f", performance.totalCpuUsage)}%"))
+                if (performance.cpuFrequencyGhz > 0f) {
+                    add(Pair("Частота ядер", "${String.format("%.2f", performance.cpuFrequencyGhz)} ГГц"))
+                }
+                add(Pair("Ядер ЦП", "${performance.cpuCores}"))
+                add(Pair("Процессов", "${performance.activeProcessesCount}"))
+                add(Pair("Потоков", "${performance.totalThreadsCount}"))
+                add(Pair("Время работы", performance.uptimeFormatted))
+            }
         )
 
         // 2. MEMORY (RAM) CARD (Windows Task Manager Purple Graph)
@@ -101,7 +115,35 @@ fun PerformanceView(
             )
         )
 
-        // 3. SYSTEM & HARDWARE SPECS
+        // 3. BATTERY & THERMAL SENSORS CARD (Hardware Telemetry)
+        val tempColor = when {
+            performance.batteryTemperatureCelsius >= 40.0f -> HeatmapExtreme
+            performance.batteryTemperatureCelsius >= 36.0f -> HeatmapMed
+            else -> CpuGreen
+        }
+
+        PerformanceChartCard(
+            title = "Батарея и Температура",
+            subtitle = "${performance.batteryLevelPercent}% • ${String.format("%.1f", performance.batteryTemperatureCelsius)}°C (${performance.thermalStatus})",
+            currentValue = "${String.format("%.1f", performance.batteryTemperatureCelsius)}°C",
+            history = performance.temperatureHistory,
+            lineColor = tempColor,
+            badgeIcon = if (performance.isOverheating) Icons.Default.Whatshot else (if (performance.isCharging) Icons.Default.BatteryChargingFull else Icons.Default.BatteryStd),
+            stats = buildList {
+                add(Pair("Температура", "${String.format("%.1f", performance.batteryTemperatureCelsius)}°C"))
+                add(Pair("Заряд", "${performance.batteryLevelPercent}%"))
+                add(Pair("Статус питания", if (performance.isCharging) "Зарядка" else "Разрядка"))
+                if (performance.batteryVoltageMv > 0) {
+                    add(Pair("Напряжение", "${performance.batteryVoltageMv} мВ"))
+                }
+                add(Pair("Нагрев", performance.thermalStatus))
+                if (performance.thermalCulpritProcess != null) {
+                    add(Pair("Главный источник нагрева", performance.thermalCulpritProcess.appName))
+                }
+            }
+        )
+
+        // 4. SYSTEM & HARDWARE SPECS
         Card(
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -131,6 +173,9 @@ fun PerformanceView(
                 SpecRow("Операционная система", performance.androidVersion)
                 SpecRow("Логических процессоров", "${performance.cpuCores} cores")
                 SpecRow("Общее время работы", performance.uptimeFormatted)
+                if (performance.dataSourceDescription.isNotEmpty()) {
+                    SpecRow("Режим телеметрии", performance.dataSourceDescription)
+                }
             }
         }
 

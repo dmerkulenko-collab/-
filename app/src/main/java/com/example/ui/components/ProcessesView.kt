@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,8 +26,12 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -59,6 +64,8 @@ import com.example.viewmodel.SortField
 fun ProcessesView(
     processes: List<ProcessInfo>,
     performance: SystemPerformanceState,
+    isUsageStatsGranted: Boolean = true,
+    onRequestPermissionClick: () -> Unit = {},
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     filter: ProcessFilter,
@@ -101,9 +108,166 @@ fun ProcessesView(
             .padding(horizontal = 14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // 1. TOP CPU CONSUMER HERO BANNER ("Кто грузит процессор")
+        // 0. Permission Warning Banner if Usage Stats access is missing
+        if (!isUsageStatsGranted) {
+            item(key = "permission_warning_card") {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.35f)
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.4f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("permission_warning_banner")
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            Text(
+                                text = "Требуется системный доступ",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        Text(
+                            text = "По соображениям безопасности Android изолирует фоновые процессы. Предоставьте доступ к истории использования, чтобы Диспетчер задач фиксировал активные игры и распределял память устройства.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Button(
+                            onClick = onRequestPermissionClick,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Разрешить доступ в настройках")
+                        }
+                    }
+                }
+            }
+        }
+
+        // 1. OVERHEATING & CULPRIT QUICK ACTION BANNER (When phone is hot or heavy process detected)
+        val thermalCulprit = performance.thermalCulpritProcess
+        if (thermalCulprit != null && (performance.isOverheating || thermalCulprit.thermalImpactScore >= 50)) {
+            item(key = "overheating_culprit_banner") {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = HeatmapExtreme.copy(alpha = 0.12f)
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.5.dp, HeatmapExtreme),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("thermal_culprit_banner")
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Whatshot,
+                                    contentDescription = null,
+                                    tint = HeatmapExtreme,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                                Text(
+                                    text = if (performance.isOverheating) "🔥 ПЕРЕГРЕВ УСТРОЙСТВА (${String.format("%.1f", performance.batteryTemperatureCelsius)}°C)" else "🔥 ИСТОЧНИК НАГРЕВА И РАЗРЯДА",
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        fontWeight = FontWeight.Black,
+                                        letterSpacing = 0.5.sp
+                                    ),
+                                    color = HeatmapExtreme
+                                )
+                            }
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = HeatmapExtreme
+                            ) {
+                                Text(
+                                    text = "${thermalCulprit.thermalImpactScore}/100",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily.Monospace
+                                    ),
+                                    color = Color.White,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = "Телефон нагревает процесс: «${thermalCulprit.appName}». Потребление: ${thermalCulprit.powerUsageLevel}. Завершите его, чтобы охладить батарею и процессор.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = { onKillProcess(thermalCulprit) },
+                                colors = ButtonDefaults.buttonColors(containerColor = HeatmapExtreme),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier
+                                    .weight(1.2f)
+                                    .testTag("kill_culprit_btn")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Остановить сейчас", color = Color.White)
+                            }
+
+                            OutlinedButton(
+                                onClick = { onOpenSettingsClick(thermalCulprit) },
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Settings,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("В настройки")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. TOP CPU CONSUMER HERO BANNER ("Кто грузит процессор")
         val topProcess = performance.topCpuProcess
-        if (topProcess != null && topProcess.cpuPercentage >= 2.0f) {
+        if (topProcess != null && topProcess.cpuPercentage >= 2.0f && topProcess.packageName != thermalCulprit?.packageName) {
             item(key = "top_cpu_hero") {
                 TopCpuBanner(
                     process = topProcess,
@@ -113,7 +277,7 @@ fun ProcessesView(
             }
         }
 
-        // 2. Search & Filter Bar
+        // 3. Search & Filter Bar
         item(key = "search_filter_bar") {
             Column(
                 modifier = Modifier

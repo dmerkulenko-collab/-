@@ -188,10 +188,9 @@ class TaskManagerViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     private suspend fun fetchData() {
-        val performance = repository.getSystemPerformance()
+        checkPermissions()
+        val (performance, processes) = repository.getPerformanceAndProcesses()
         _performanceState.value = performance
-
-        val processes = repository.getRunningProcesses()
         _allProcesses.value = processes
     }
 
