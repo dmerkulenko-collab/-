@@ -185,7 +185,7 @@ fun HistoryView(
             } else {
                 items(
                     items = historyList,
-                    key = { it.packageName }
+                    key = { "${it.packageName}_${it.lastTimeUsed}" }
                 ) { appHistory ->
                     HistoryItemCard(appHistory = appHistory, maxUsage = maxUsage)
                 }
@@ -214,7 +214,7 @@ private fun HistoryItemCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // App Icon
+                // App Icon with safe fallback
                 Box(
                     modifier = Modifier
                         .size(36.dp)
@@ -230,7 +230,7 @@ private fun HistoryItemCard(
                         )
                     } else {
                         Text(
-                            text = appHistory.appName.take(1).uppercase(),
+                            text = appHistory.appName.take(1).uppercase().ifEmpty { "?" },
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -269,8 +269,8 @@ private fun HistoryItemCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Progress Bar representing proportion of foreground activity
-            val progress = if (maxUsage > 0) {
-                (appHistory.totalTimeInForegroundMs.toFloat() / maxUsage.toFloat()).coerceIn(0.02f, 1f)
+            val progress = if (maxUsage > 0L) {
+                (appHistory.totalTimeInForegroundMs.toFloat() / maxUsage.toFloat()).coerceIn(0.01f, 1f)
             } else 0f
 
             LinearProgressIndicator(

@@ -404,23 +404,36 @@ fun ProcessItemCard(
 
 @Composable
 fun DrawableImage(
-    drawable: Drawable,
+    drawable: Drawable?,
     contentDescription: String?,
     modifier: Modifier = Modifier
 ) {
-    val bitmap = remember(drawable) {
-        val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 64
-        val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 64
-        val bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bm)
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
-        drawable.draw(canvas)
-        bm
+    if (drawable == null) {
+        Box(modifier = modifier)
+        return
     }
 
-    Image(
-        bitmap = bitmap.asImageBitmap(),
-        contentDescription = contentDescription,
-        modifier = modifier
-    )
+    val bitmap = remember(drawable) {
+        try {
+            val width = if (drawable.intrinsicWidth in 1..2048) drawable.intrinsicWidth else 72
+            val height = if (drawable.intrinsicHeight in 1..2048) drawable.intrinsicHeight else 72
+            val bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bm)
+            drawable.setBounds(0, 0, canvas.width, canvas.height)
+            drawable.draw(canvas)
+            bm
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
+    if (bitmap != null) {
+        Image(
+            bitmap = bitmap.asImageBitmap(),
+            contentDescription = contentDescription,
+            modifier = modifier
+        )
+    } else {
+        Box(modifier = modifier)
+    }
 }

@@ -1,5 +1,6 @@
 package com.example
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -13,8 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,6 +26,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.crash.CrashHandler
+import com.example.crash.CrashReportActivity
 import com.example.ui.components.HistoryView
 import com.example.ui.components.PerformanceView
 import com.example.ui.components.ProcessDetailsDialog
@@ -77,8 +82,25 @@ fun TaskManagerApp(
     val isUsageStatsGranted by viewModel.isUsageStatsGranted.collectAsStateWithLifecycle()
     val selectedProcessForDetails by viewModel.selectedProcessForDetails.collectAsStateWithLifecycle()
 
-    // Handle user snackbars / toasts
+    // Handle user snackbars / toasts and check for previous crash report
     LaunchedEffect(Unit) {
+        if (CrashHandler.isCrashPendingReview(context)) {
+            val result = snackbarHostState.showSnackbar(
+                message = "Обнаружен отчёт о сбое! Текст скопирован в буфер обмена.",
+                actionLabel = "Открыть",
+                duration = SnackbarDuration.Long
+            )
+            CrashHandler.markCrashReviewed(context)
+            if (result == SnackbarResult.ActionPerformed) {
+                val report = CrashHandler.getLastCrashReport(context) ?: "Отчёт пуст"
+                val intent = Intent(context, CrashReportActivity::class.java).apply {
+                    putExtra(CrashHandler.EXTRA_CRASH_REPORT, report)
+                    putExtra(CrashHandler.EXTRA_EXCEPTION_NAME, "Предыдущий сбой")
+                    putExtra(CrashHandler.EXTRA_EXCEPTION_MESSAGE, "Аварийное завершение работы")
+                }
+                context.startActivity(intent)
+            }
+        }
         viewModel.userMessage.collectLatest { message ->
             snackbarHostState.showSnackbar(message)
         }
@@ -92,6 +114,19 @@ fun TaskManagerApp(
                 refreshIntervalMs = refreshIntervalMs,
                 onRefreshIntervalChange = { viewModel.setRefreshInterval(it) },
                 onRefreshClick = { viewModel.refreshNow() },
+                onViewCrashReport = {
+                    val report = CrashHandler.getOrGenerateReport(context)
+                    val intent = Intent(context, CrashReportActivity::class.java).apply {
+                        putExtra(CrashHandler.EXTRA_CRASH_REPORT, report)
+                        putExtra(CrashHandler.EXTRA_EXCEPTION_NAME, "Диагностика системы")
+                        putExtra(CrashHandler.EXTRA_EXCEPTION_MESSAGE, "Журнал сбоев и диагностика оборудования")
+                    }
+                    context.startActivity(intent)
+                },
+                onTriggerTestCrash = {
+                    Toast.makeText(context, "Имитация сбоя для проверки перехватчика...", Toast.LENGTH_SHORT).show()
+                    CrashHandler.triggerTestCrash()
+                },
                 modifier = Modifier.statusBarsPadding()
             )
         },
