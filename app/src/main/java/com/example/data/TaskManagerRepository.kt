@@ -616,16 +616,19 @@ class TaskManagerRepository(private val context: Context) {
 
         val historyList = stats
             .filter { it.totalTimeInForeground > 1000 }
-            .map { stat ->
-                val appInfo = getAppInfo(stat.packageName)
+            .groupBy { it.packageName }
+            .map { (pkgName, statsGroup) ->
+                val totalForegroundTime = statsGroup.sumOf { it.totalTimeInForeground }
+                val maxLastTimeUsed = statsGroup.maxOfOrNull { it.lastTimeUsed } ?: 0L
+                val appInfo = getAppInfo(pkgName)
                 val isSystem = (appInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM)) != 0
-                val label = getAppName(stat.packageName, stat.packageName)
-                val icon = getAppIcon(stat.packageName)
+                val label = getAppName(pkgName, pkgName)
+                val icon = getAppIcon(pkgName)
                 AppHistoryUsage(
-                    packageName = stat.packageName,
+                    packageName = pkgName,
                     appName = label,
-                    totalTimeInForegroundMs = stat.totalTimeInForeground,
-                    lastTimeUsed = stat.lastTimeUsed,
+                    totalTimeInForegroundMs = totalForegroundTime,
+                    lastTimeUsed = maxLastTimeUsed,
                     isSystemApp = isSystem,
                     icon = icon
                 )

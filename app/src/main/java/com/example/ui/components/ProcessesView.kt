@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
@@ -440,10 +440,10 @@ fun ProcessesView(
                 }
             }
         } else {
-            items(
+            itemsIndexed(
                 items = filteredProcesses,
-                key = { it.pid }
-            ) { process ->
+                key = { index, process -> "${process.pid}_${process.packageName}_$index" }
+            ) { _, process ->
                 ProcessItemCard(
                     process = process,
                     onKillClick = onKillProcess,

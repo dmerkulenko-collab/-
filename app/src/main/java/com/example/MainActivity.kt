@@ -85,6 +85,8 @@ fun TaskManagerApp(
     // Handle user snackbars / toasts and check for previous crash report
     LaunchedEffect(Unit) {
         if (CrashHandler.isCrashPendingReview(context)) {
+            val report = CrashHandler.getLastCrashReport(context) ?: "Отчёт пуст"
+            CrashHandler.copyToClipboard(context, report)
             val result = snackbarHostState.showSnackbar(
                 message = "Обнаружен отчёт о сбое! Текст скопирован в буфер обмена.",
                 actionLabel = "Открыть",
@@ -92,7 +94,6 @@ fun TaskManagerApp(
             )
             CrashHandler.markCrashReviewed(context)
             if (result == SnackbarResult.ActionPerformed) {
-                val report = CrashHandler.getLastCrashReport(context) ?: "Отчёт пуст"
                 val intent = Intent(context, CrashReportActivity::class.java).apply {
                     putExtra(CrashHandler.EXTRA_CRASH_REPORT, report)
                     putExtra(CrashHandler.EXTRA_EXCEPTION_NAME, "Предыдущий сбой")
